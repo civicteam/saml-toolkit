@@ -65,6 +65,11 @@ const buildEncodedAuthnRequest = opt => new Promise((resolve, reject) => {
 
 const buildResponse = opt => new Promise((resolve, reject) => {
 	const now = new Date;
+	const future = new Date();
+	future.setMinutes(future.getMinutes()+1);
+	const past = new Date();
+	past.setMinutes(future.getMinutes()-2);
+
 	const attributes = [];
 	for(const name in opt.Attributes){
 		attributes.push({
@@ -131,12 +136,17 @@ const buildResponse = opt => new Promise((resolve, reject) => {
 						},
 						"saml:SubjectConfirmationData": {
 							"$": {
-								"InResponseTo": opt.InResponseTo
+								"InResponseTo": opt.InResponseTo,
+								"Recipient": opt.Recipient,
+								"NotOnOrAfter": toInstant(future)
 							}
 						}
 					}
 				},
 				"saml:Conditions": {
+					"$": {
+						"NotBefore": toInstant(past)
+					},
 					"saml:AudienceRestriction": {
 						"saml:Audience": opt.Audience
 					}
